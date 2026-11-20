@@ -27,7 +27,7 @@ O comando `/help` DEVE (SHALL) apresentar a lista de comandos e flags disponíve
 #### Scenario: Solicitação de ajuda
 
 - **WHEN** a CLI é invocada com `/help`
-- **THEN** a saída lista `/person`, `/contact`, `/cpf`, `/cnpj`, `/guid`, `--no-punctuation`, `--no-dashes` e `--uppercase`, e a aplicação finaliza com código de saída zero
+- **THEN** a saída lista `/person`, `/contact`, `/cpf`, `/cnpj`, `/guid`, `--no-punctuation`, `--no-dashes`, `--uppercase` e `--contact`, e a aplicação finaliza com código de saída zero
 
 #### Scenario: Ajuda não gera dados
 
@@ -45,11 +45,11 @@ Quando nenhum argumento for informado, a CLI DEVE (SHALL) apresentar o mesmo uso
 
 ### Requirement: Flags por comando
 
-Cada flag DEVE (SHALL) ser aceita apenas pelos comandos aos quais se aplica: `--no-punctuation` por `/cpf` e `/cnpj`; `--no-dashes` e `--uppercase` por `/guid`; `--uppercase` por `/person`.
+Cada flag DEVE (SHALL) ser aceita apenas pelos comandos aos quais se aplica: `--no-punctuation` por `/cpf` e `/cnpj`; `--no-dashes` e `--uppercase` por `/guid`; `--uppercase` e `--contact` por `/person`.
 
 #### Scenario: Flag aplicada ao comando correto
 
-- **WHEN** a CLI é invocada com `/cpf --no-punctuation`, `/guid --uppercase` ou `/person --uppercase`
+- **WHEN** a CLI é invocada com `/cpf --no-punctuation`, `/guid --uppercase`, `/person --uppercase` ou `/person --contact`
 - **THEN** o sistema executa o comando com a formatação solicitada
 
 #### Scenario: Flag aplicada a comando incorreto
