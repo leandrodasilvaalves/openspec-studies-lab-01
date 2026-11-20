@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using Bogus;
 
 namespace FakeDataCli.Generators;
@@ -16,11 +18,11 @@ public sealed class ContactGenerator
     public ContactData Generate()
     {
         var phone = _faker.Phone.PhoneNumber();
-        var email = _faker.Internet.Email();
+        var email = NormalizeEmail(_faker.Internet.Email(), uppercase: false);
         return new ContactData(phone, email);
     }
 
-    public ContactData GenerateForPerson(PersonData person)
+    public ContactData GenerateForPerson(PersonData person, bool uppercase = false)
     {
         if (person is null)
         {
@@ -30,7 +32,23 @@ public sealed class ContactGenerator
         var phone = _faker.Phone.PhoneNumber();
         var number = _faker.Random.Number(0, 9999).ToString("D4");
         var domain = _faker.Internet.DomainName();
-        var email = $"{person.FirstName}{number}@{domain}";
+        var email = NormalizeEmail($"{person.FirstName}{number}@{domain}", uppercase);
         return new ContactData(phone, email);
+    }
+
+    private static string NormalizeEmail(string email, bool uppercase)
+    {
+        var decomposed = email.Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder(decomposed.Length);
+        foreach (var character in decomposed)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(character) != UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(character);
+            }
+        }
+
+        var withoutDiacritics = builder.ToString().Normalize(NormalizationForm.FormC);
+        return uppercase ? withoutDiacritics.ToUpperInvariant() : withoutDiacritics.ToLowerInvariant();
     }
 }

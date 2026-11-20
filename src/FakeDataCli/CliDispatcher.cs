@@ -113,7 +113,7 @@ public static class CliDispatcher
 
         if (flags.Contains("--contact"))
         {
-            var contact = new ContactGenerator(SharedFaker.Instance).GenerateForPerson(person);
+            var contact = new ContactGenerator(SharedFaker.Instance).GenerateForPerson(person, uppercase);
             output.WriteLine($"phone: {contact.Phone}");
             output.WriteLine($"email: {contact.Email}");
         }

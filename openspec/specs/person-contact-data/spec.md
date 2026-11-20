@@ -62,22 +62,22 @@ Quando a flag `--contact` for informada ao comando `/person`, o sistema DEVE (SH
 
 #### Scenario: Contato coerente com a pessoa
 - **WHEN** a CLI é invocada com `/person --contact`
-- **THEN** o prefixo do `email` corresponde ao `first_name` exibido na mesma saída
+- **THEN** o prefixo do `email` corresponde ao `first_name` exibido na mesma saída após remoção de diacríticos e conversão para minúsculas
 
 #### Scenario: Comportamento padrão preservado
 - **WHEN** a CLI é invocada com `/person` sem `--contact`
 - **THEN** apenas `first_name`, `last_name` e `full_name` são retornados
 
 ### Requirement: Formato do e-mail do contato de pessoa
-O `email` gerado para `/person --contact` DEVE (SHALL) ser composto pelo `first_name` da pessoa, seguido de um número aleatório de exatamente 4 dígitos e de um domínio aleatório fornecido pelo Bogus.
+O `email` gerado para `/person --contact` DEVE (SHALL) ser composto pelo `first_name` da pessoa sem diacríticos, seguido de um número aleatório de exatamente 4 dígitos e de um domínio aleatório fornecido pelo Bogus, com a caixa definida pela presença de `--uppercase`.
 
 #### Scenario: E-mail com prefixo e sufixo esperados
 - **WHEN** a CLI é invocada com `/person --contact`
-- **THEN** `email` corresponde ao padrão `<first_name><4 dígitos>@<domínio>`, sem caracteres adicionais entre o nome e os dígitos
+- **THEN** `email` corresponde ao padrão `<first_name sem diacríticos em minúsculas><4 dígitos>@<domínio>`, sem caracteres adicionais entre o nome e os dígitos
 
 #### Scenario: E-mail com caixa alta
 - **WHEN** a CLI é invocada com `/person --uppercase --contact`
-- **THEN** o prefixo do `email` corresponde ao `first_name` em caixa alta exibido na saída
+- **THEN** o `email` inteiro é retornado em maiúsculas, e seu prefixo corresponde ao `first_name` exibido na saída após remoção de diacríticos e conversão para maiúsculas
 
 ### Requirement: CPF associado à pessoa com --cpf
 
@@ -130,3 +130,22 @@ A flag `--cpf` DEVE (SHALL) poder ser combinada com `--uppercase` e `--contact`,
 
 - **WHEN** a CLI é invocada com `/person --cpf --contact` ou `/person --contact --cpf`
 - **THEN** a ordem dos campos apresentados é a mesma nos dois casos, e `cpf`, `phone` e `email` aparecem uma única vez cada
+
+### Requirement: E-mail sem diacríticos e com caixa controlada
+
+Todo `email` gerado pela CLI DEVE (SHALL) ser composto apenas por caracteres ASCII sem diacríticos. Sem `--uppercase`, o `email` DEVE (SHALL) ser retornado inteiramente em minúsculas; com `--uppercase` em `/person`, o `email` DEVE (SHALL) ser retornado inteiramente em maiúsculas.
+
+#### Scenario: E-mail de /contact em minúsculas e sem diacríticos
+
+- **WHEN** o comando `/contact` é executado
+- **THEN** `email` contém apenas caracteres ASCII, não contém diacríticos e é idêntico à sua versão convertida para minúsculas
+
+#### Scenario: E-mail de /person --contact em minúsculas e sem diacríticos
+
+- **WHEN** a CLI é invocada com `/person --contact`
+- **THEN** `email` contém apenas caracteres ASCII, não contém diacríticos e é idêntico à sua versão convertida para minúsculas, mesmo quando `first_name` ou o domínio gerados possuem letras maiúsculas ou acentos
+
+#### Scenario: E-mail de /person --uppercase --contact em maiúsculas e sem diacríticos
+
+- **WHEN** a CLI é invocada com `/person --uppercase --contact`
+- **THEN** `email` contém apenas caracteres ASCII, não contém diacríticos e é idêntico à sua versão convertida para maiúsculas

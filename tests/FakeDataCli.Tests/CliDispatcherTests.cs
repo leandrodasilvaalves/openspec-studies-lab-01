@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Text;
+
 namespace FakeDataCli.Tests;
 
 public class CliDispatcherTests
@@ -257,5 +260,90 @@ public class CliDispatcherTests
         Assert.Contains("--no-punctuation", result.Error);
         Assert.Contains("/help", result.Error);
         Assert.Equal(string.Empty, result.Output);
+    }
+
+    [Fact]
+    public void ContactEmailIsLowercaseAndWithoutDiacritics()
+    {
+        var result = Invoke("/contact");
+
+        Assert.Equal(CliDispatcher.SuccessExitCode, result.ExitCode);
+        var email = ParseLabeled(result.Output)["email"];
+
+        Assert.Equal(email.ToLowerInvariant(), email);
+        Assert.True(IsAllAsciiWithoutDiacritics(email));
+    }
+
+    [Fact]
+    public void PersonContactEmailIsLowercaseWithoutDiacriticsAndPrefixMatchesNormalizedFirstName()
+    {
+        var result = Invoke("/person", "--contact");
+
+        Assert.Equal(CliDispatcher.SuccessExitCode, result.ExitCode);
+        var fields = ParseLabeled(result.Output);
+        var email = fields["email"];
+
+        Assert.Equal(email.ToLowerInvariant(), email);
+        Assert.True(IsAllAsciiWithoutDiacritics(email));
+
+        var localPart = email.Split('@')[0];
+        var digits = localPart[^4..];
+        var namePart = localPart[..^4];
+        Assert.Matches(@"^\d{4}$", digits);
+        Assert.Equal(RemoveDiacritics(fields["first_name"].ToLowerInvariant()), namePart);
+    }
+
+    [Fact]
+    public void PersonUppercaseContactEmailIsUppercaseAndWithoutDiacritics()
+    {
+        var result = Invoke("/person", "--uppercase", "--contact");
+
+        Assert.Equal(CliDispatcher.SuccessExitCode, result.ExitCode);
+        var email = ParseLabeled(result.Output)["email"];
+
+        Assert.Equal(email.ToUpperInvariant(), email);
+        Assert.True(IsAllAsciiWithoutDiacritics(email));
+    }
+
+    [Fact]
+    public void ContactWithUppercaseFlagReturnsInvalidArguments()
+    {
+        var result = Invoke("/contact", "--uppercase");
+
+        Assert.Equal(CliDispatcher.InvalidArgumentsExitCode, result.ExitCode);
+        Assert.Contains("--uppercase", result.Error);
+        Assert.Equal(string.Empty, result.Output);
+    }
+
+    private static bool IsAllAsciiWithoutDiacritics(string text)
+    {
+        foreach (var character in text.Normalize(NormalizationForm.FormD))
+        {
+            if (!char.IsAscii(character))
+            {
+                return false;
+            }
+
+            if (CharUnicodeInfo.GetUnicodeCategory(character) == UnicodeCategory.NonSpacingMark)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static string RemoveDiacritics(string text)
+    {
+        var builder = new StringBuilder(text.Length);
+        foreach (var character in text.Normalize(NormalizationForm.FormD))
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(character) != UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(character);
+            }
+        }
+
+        return builder.ToString().Normalize(NormalizationForm.FormC);
     }
 }
