@@ -13,10 +13,15 @@ public sealed class PersonGenerator
         _faker = faker ?? throw new ArgumentNullException(nameof(faker));
     }
 
-    public PersonData Generate()
+    public PersonData Generate(bool uppercase = false)
     {
         var firstName = _faker.Person.FirstName;
         var lastName = _faker.Person.LastName;
+        if (uppercase)
+        {
+            firstName = firstName.ToUpperInvariant();
+            lastName = lastName.ToUpperInvariant();
+        }
         return new PersonData(firstName, lastName, $"{firstName} {lastName}");
     }
 }

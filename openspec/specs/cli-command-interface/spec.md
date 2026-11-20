@@ -45,11 +45,11 @@ Quando nenhum argumento for informado, a CLI DEVE (SHALL) apresentar o mesmo uso
 
 ### Requirement: Flags por comando
 
-Cada flag DEVE (SHALL) ser aceita apenas pelos comandos aos quais se aplica: `--no-punctuation` por `/cpf` e `/cnpj`; `--no-dashes` e `--uppercase` por `/guid`.
+Cada flag DEVE (SHALL) ser aceita apenas pelos comandos aos quais se aplica: `--no-punctuation` por `/cpf` e `/cnpj`; `--no-dashes` e `--uppercase` por `/guid`; `--uppercase` por `/person`.
 
 #### Scenario: Flag aplicada ao comando correto
 
-- **WHEN** a CLI é invocada com `/cpf --no-punctuation` ou `/guid --uppercase`
+- **WHEN** a CLI é invocada com `/cpf --no-punctuation`, `/guid --uppercase` ou `/person --uppercase`
 - **THEN** o sistema executa o comando com a formatação solicitada
 
 #### Scenario: Flag aplicada a comando incorreto

@@ -8,6 +8,7 @@ public static class CliDispatcher
     public const int InvalidArgumentsExitCode = 2;
 
     private static readonly string[] NoFlags = Array.Empty<string>();
+    private static readonly string[] PersonFlags = { "--uppercase" };
     private static readonly string[] DocumentFlags = { "--no-punctuation" };
     private static readonly string[] GuidFlags = { "--no-dashes", "--uppercase" };
 
@@ -34,12 +35,12 @@ public static class CliDispatcher
                 return SuccessExitCode;
 
             case "/person":
-                if (RejectUnsupportedFlags(command, flags, NoFlags, error))
+                if (RejectUnsupportedFlags(command, flags, PersonFlags, error))
                 {
                     return InvalidArgumentsExitCode;
                 }
 
-                WritePerson(output);
+                WritePerson(output, flags);
                 return SuccessExitCode;
 
             case "/contact":
@@ -102,9 +103,10 @@ public static class CliDispatcher
         return false;
     }
 
-    private static void WritePerson(TextWriter output)
+    private static void WritePerson(TextWriter output, IReadOnlyCollection<string> flags)
     {
-        var person = new PersonGenerator(SharedFaker.Instance).Generate();
+        var uppercase = flags.Contains("--uppercase");
+        var person = new PersonGenerator(SharedFaker.Instance).Generate(uppercase);
         output.WriteLine($"first_name: {person.FirstName}");
         output.WriteLine($"last_name: {person.LastName}");
         output.WriteLine($"full_name: {person.FullName}");
@@ -139,7 +141,7 @@ public static class CliDispatcher
         writer.WriteLine("FakeDataCli - Brazilian fake data generator");
         writer.WriteLine();
         writer.WriteLine("Usage:");
-        writer.WriteLine("  /person                            Generate first_name, last_name and full_name");
+        writer.WriteLine("  /person [--uppercase]              Generate first_name, last_name and full_name");
         writer.WriteLine("  /contact                           Generate phone and email");
         writer.WriteLine("  /cpf [--no-punctuation]            Generate a valid CPF");
         writer.WriteLine("  /cnpj [--no-punctuation]           Generate a valid CNPJ");

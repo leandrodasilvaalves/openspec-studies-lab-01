@@ -58,7 +58,7 @@ public class CliDispatcherTests
     }
 
     [Theory]
-    [InlineData("/person", "--uppercase")]
+    [InlineData("/person", "--no-punctuation")]
     [InlineData("/contact", "--no-punctuation")]
     [InlineData("/guid", "--no-punctuation")]
     [InlineData("/help", "--no-dashes")]
