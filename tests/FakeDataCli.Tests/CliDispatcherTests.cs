@@ -18,6 +18,14 @@ public class CliDispatcherTests
             .ToDictionary(parts => parts[0], parts => parts[1]);
     }
 
+    private static string[] ParseLabels(string output)
+    {
+        return output
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.Split(": ", 2)[0])
+            .ToArray();
+    }
+
     [Fact]
     public void HelpReturnsSuccessAndListsCommandsAndFlags()
     {
@@ -27,7 +35,7 @@ public class CliDispatcherTests
         foreach (var token in new[]
                  {
                      "/person", "/contact", "/cpf", "/cnpj", "/guid", "/help",
-                     "--no-punctuation", "--no-dashes", "--uppercase"
+                     "--no-punctuation", "--no-dashes", "--uppercase", "--contact", "--cpf"
                  })
         {
             Assert.Contains(token, result.Output);
@@ -60,6 +68,7 @@ public class CliDispatcherTests
     [Theory]
     [InlineData("/person", "--no-punctuation")]
     [InlineData("/contact", "--no-punctuation")]
+    [InlineData("/contact", "--cpf")]
     [InlineData("/guid", "--no-punctuation")]
     [InlineData("/help", "--no-dashes")]
     public void UnsupportedFlagReturnsInvalidArguments(string command, string flag)
@@ -162,5 +171,91 @@ public class CliDispatcherTests
         var value = result.Output.Trim();
         Assert.Matches("^[0-9A-F]{32}$", value);
         Assert.DoesNotContain("-", value);
+    }
+
+    [Fact]
+    public void PersonWithCpfPrintsLabelledFieldsInFixedOrder()
+    {
+        var result = Invoke("/person", "--cpf");
+
+        Assert.Equal(CliDispatcher.SuccessExitCode, result.ExitCode);
+        Assert.Equal(
+            new[] { "first_name", "last_name", "full_name", "cpf" },
+            ParseLabels(result.Output));
+        var fields = ParseLabeled(result.Output);
+        Assert.False(string.IsNullOrWhiteSpace(fields["first_name"]));
+        Assert.False(string.IsNullOrWhiteSpace(fields["last_name"]));
+        Assert.Equal($"{fields["first_name"]} {fields["last_name"]}", fields["full_name"]);
+    }
+
+    [Fact]
+    public void PersonWithCpfHasValidPunctuatedCpf()
+    {
+        var result = Invoke("/person", "--cpf");
+
+        Assert.Equal(CliDispatcher.SuccessExitCode, result.ExitCode);
+        var cpf = ParseLabeled(result.Output)["cpf"];
+        Assert.Matches(@"^\d{3}\.\d{3}\.\d{3}-\d{2}$", cpf);
+        Assert.True(DocumentValidator.IsValidCpf(cpf));
+        Assert.True(cpf.Where(char.IsDigit).Distinct().Count() > 1);
+    }
+
+    [Fact]
+    public void PersonWithUppercaseAndCpfKeepsUppercaseAndValidCpf()
+    {
+        var result = Invoke("/person", "--uppercase", "--cpf");
+
+        Assert.Equal(CliDispatcher.SuccessExitCode, result.ExitCode);
+        var fields = ParseLabeled(result.Output);
+        Assert.Equal(fields["first_name"].ToUpperInvariant(), fields["first_name"]);
+        Assert.Equal(fields["last_name"].ToUpperInvariant(), fields["last_name"]);
+        Assert.Equal($"{fields["first_name"]} {fields["last_name"]}", fields["full_name"]);
+        Assert.Matches(@"^\d{3}\.\d{3}\.\d{3}-\d{2}$", fields["cpf"]);
+        Assert.True(DocumentValidator.IsValidCpf(fields["cpf"]));
+    }
+
+    [Theory]
+    [InlineData("--contact", "--cpf")]
+    [InlineData("--cpf", "--contact")]
+    public void PersonWithContactAndCpfPrintsSixLinesInFixedOrder(string firstFlag, string secondFlag)
+    {
+        var result = Invoke("/person", firstFlag, secondFlag);
+
+        Assert.Equal(CliDispatcher.SuccessExitCode, result.ExitCode);
+        Assert.Equal(
+            new[] { "first_name", "last_name", "full_name", "phone", "email", "cpf" },
+            ParseLabels(result.Output));
+
+        var fields = ParseLabeled(result.Output);
+        Assert.Matches(@"^(\+55\s)?\(\d{2}\)\s?\d{4,5}-\d{4}$", fields["phone"]);
+        Assert.Matches(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", fields["email"]);
+        Assert.True(DocumentValidator.IsValidCpf(fields["cpf"]));
+    }
+
+    [Fact]
+    public void PersonWithoutCpfOmitsCpfLine()
+    {
+        var person = Invoke("/person");
+
+        Assert.Equal(CliDispatcher.SuccessExitCode, person.ExitCode);
+        Assert.DoesNotContain("cpf", ParseLabels(person.Output));
+
+        var withContact = Invoke("/person", "--contact");
+
+        Assert.Equal(CliDispatcher.SuccessExitCode, withContact.ExitCode);
+        Assert.Equal(
+            new[] { "first_name", "last_name", "full_name", "phone", "email" },
+            ParseLabels(withContact.Output));
+    }
+
+    [Fact]
+    public void PersonWithCpfAndNoPunctuationReturnsInvalidArguments()
+    {
+        var result = Invoke("/person", "--cpf", "--no-punctuation");
+
+        Assert.Equal(CliDispatcher.InvalidArgumentsExitCode, result.ExitCode);
+        Assert.Contains("--no-punctuation", result.Error);
+        Assert.Contains("/help", result.Error);
+        Assert.Equal(string.Empty, result.Output);
     }
 }

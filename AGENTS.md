@@ -25,9 +25,11 @@
 - Flags:
   - `/cpf`, `/cnpj`: `--no-punctuation`
   - `/guid`: `--no-dashes`, `--uppercase`
-  - `/person`: `--uppercase`, `--contact`
-- Output labels are English (`first_name`, `last_name`, `full_name`, `phone`, `email`); commands/flags are English except `cpf`/`cnpj`.
+  - `/person`: `--uppercase`, `--contact`, `--cpf`
+- Output labels are English (`first_name`, `last_name`, `full_name`, `phone`, `email`, `cpf`); commands/flags are English except `cpf`/`cnpj`.
 - `/person --contact` appends `phone` and `email`; the e-mail is `<first_name><4 digits>@<Bogus domain>`.
+- `/person --cpf` appends `cpf` as the last line, always punctuated (`000.000.000-00`); `--no-punctuation` is not accepted by `/person`.
+- `--cpf` can be combined with `--uppercase` and `--contact`; field order is fixed regardless of flag order.
 - Default behavior must be preserved when optional flags are absent.
 
 ## OpenSpec

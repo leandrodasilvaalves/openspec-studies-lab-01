@@ -8,7 +8,7 @@ public static class CliDispatcher
     public const int InvalidArgumentsExitCode = 2;
 
     private static readonly string[] NoFlags = Array.Empty<string>();
-    private static readonly string[] PersonFlags = { "--uppercase", "--contact" };
+    private static readonly string[] PersonFlags = { "--uppercase", "--contact", "--cpf" };
     private static readonly string[] DocumentFlags = { "--no-punctuation" };
     private static readonly string[] GuidFlags = { "--no-dashes", "--uppercase" };
 
@@ -117,6 +117,12 @@ public static class CliDispatcher
             output.WriteLine($"phone: {contact.Phone}");
             output.WriteLine($"email: {contact.Email}");
         }
+
+        if (flags.Contains("--cpf"))
+        {
+            var cpf = BrazilianDocumentGenerator.GenerateCpfDigits();
+            output.WriteLine($"cpf: {BrazilianDocumentGenerator.FormatCpf(cpf)}");
+        }
     }
 
     private static void WriteContact(TextWriter output)
@@ -148,7 +154,7 @@ public static class CliDispatcher
         writer.WriteLine("FakeDataCli - Brazilian fake data generator");
         writer.WriteLine();
         writer.WriteLine("Usage:");
-        writer.WriteLine("  /person [--uppercase] [--contact]  Generate first_name, last_name and full_name");
+        writer.WriteLine("  /person [--uppercase] [--contact] [--cpf]  Generate first_name, last_name, full_name and optional fields");
         writer.WriteLine("  /contact                           Generate phone and email");
         writer.WriteLine("  /cpf [--no-punctuation]            Generate a valid CPF");
         writer.WriteLine("  /cnpj [--no-punctuation]           Generate a valid CNPJ");
