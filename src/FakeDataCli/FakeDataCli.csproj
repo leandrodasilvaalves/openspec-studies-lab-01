@@ -5,6 +5,14 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>faker</ToolCommandName>
+    <PackageId>fakedatacli</PackageId>
+    <Version>1.0.0</Version>
+    <Description>Gerador de dados fakes brasileiros com Bogus (locale pt_BR). CLI embalada como ferramenta .NET invocável via faker.</Description>
+    <Authors>Leandro Alves</Authors>
+    <Title>FakeDataCli - Ferramenta de dados fakes brasileiros</Title>
+    <Summary>Ferramenta .NET embalada como faker que gera dados fakes brasileiros via faker /{comando}.</Summary>
   </PropertyGroup>
 
   <ItemGroup>

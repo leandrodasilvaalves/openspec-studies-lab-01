@@ -11,6 +11,12 @@
 - Run CLI: `dotnet run --project src/FakeDataCli -- /person`
 - Single test: `dotnet test --filter "FullyQualifiedName~<TestName>"`
 
+## Ferramenta .NET (`faker`)
+
+- Instalação: `dotnet tool install -g fakedatacli --source src/FakeDataCli/bin/Release` (nupkg gerado por `dotnet pack src/FakeDataCli`).
+- Invocação: `faker /{comando}` — comando da ferramenta (`ToolCommandName=faker`, PackageId `fakedatacli`), com o mesmo contrato de `cli-command-interface`.
+- A forma `dotnet faker` não é resolvida pela CLI do dotnet — a tool tem um único comando e a CLI busca o executável `dotnet-faker` na PATH; invocamos a tool como `faker`.
+
 ## Architecture
 
 - Entry point: `src/FakeDataCli/Program.cs` → `CliDispatcher.Run`.
