@@ -21,7 +21,7 @@ fi
 echo ">> dotnet pack src/FakeDataCli"
 dotnet pack src/FakeDataCli
 
-NUPKG="$(ls src/FakeDataCli/bin/Release/fakedatacli.*.nupkg | head -n 1)"
+NUPKG="$(ls -t src/FakeDataCli/bin/Release/fakedatacli.*.nupkg | head -n 1)"
 echo ">> dotnet nuget push $NUPKG"
 dotnet nuget push "$NUPKG" --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY"
 
